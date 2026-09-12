@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useData } from '../context/DataContext';
 import { THEME } from '../constants/theme';
 import { CustomIcon } from '../components/CustomIcon';
+import { TourSpotlightBadge } from '../components/TourSpotlightBadge';
 import { formatTimeAgo } from '../utils/parser';
 
 interface McpTool {
@@ -95,7 +96,11 @@ const MCP_TOOLS: McpTool[] = [
   },
 ];
 
-export const IntegrationsScreen: React.FC = () => {
+interface IntegrationsScreenProps {
+  activeHighlightStep?: string | null;
+}
+
+export const IntegrationsScreen: React.FC<IntegrationsScreenProps> = ({ activeHighlightStep }) => {
   const { settings, updateSettings, todos, activities, reminders, events, logEvent, showToast } = useData();
 
   const [activeHarness, setActiveHarness] = useState<'claude' | 'cursor' | 'hermes'>('claude');
@@ -160,15 +165,15 @@ export const IntegrationsScreen: React.FC = () => {
 
   const getSnippet = () => {
     if (activeHarness === 'claude') {
-      return `claude mcp add daytracker -- https://api.daytracker.app/mcp \\
+      return `claude mcp add dayset -- https://api.dayset.app/mcp \\
   -H "Authorization: Bearer ${token}"`;
     }
     if (activeHarness === 'cursor') {
       return `// ~/.cursor/mcp.json
 {
   "mcpServers": {
-    "daytracker": {
-      "url": "https://api.daytracker.app/mcp",
+    "dayset": {
+      "url": "https://api.dayset.app/mcp",
       "headers": {
         "Authorization": "Bearer ${token}"
       }
@@ -179,7 +184,7 @@ export const IntegrationsScreen: React.FC = () => {
     return `# Python Hermes / Pi Agent
 from mcp.client import ClientSession
 
-async with ClientSession("https://api.daytracker.app/mcp") as session:
+async with ClientSession("https://api.dayset.app/mcp") as session:
     session.headers["Authorization"] = "Bearer ${token}"
     todos = await session.call_tool("get_plate", {})
     print(todos)`;
@@ -201,8 +206,17 @@ async with ClientSession("https://api.daytracker.app/mcp") as session:
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        {activeHighlightStep === 'mcp' && (
+          <TourSpotlightBadge
+            stepNumber={9}
+            label="MCP Agent Gateway"
+            color="#7aa2f7"
+            direction="down"
+          />
+        )}
+
         {/* Token Management Card */}
-        <View style={styles.card}>
+        <View style={[styles.card, activeHighlightStep === 'mcp' && styles.spotlightCard]}>
           <Text style={styles.cardHeaderLabel}>PERSONAL ACCESS TOKEN</Text>
           <Text style={styles.cardSubtext}>
             Connect Claude Code, Cursor, Pi, and custom agents directly to your day.
@@ -227,7 +241,7 @@ async with ClientSession("https://api.daytracker.app/mcp") as session:
             <TouchableOpacity onPress={regenerateToken}>
               <Text style={styles.regenerateText}>Regenerate Token</Text>
             </TouchableOpacity>
-            <Text style={styles.endpointLabel}>Endpoint: https://api.daytracker.app/mcp</Text>
+            <Text style={styles.endpointLabel}>Endpoint: https://api.dayset.app/mcp</Text>
           </View>
         </View>
 
@@ -442,6 +456,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: THEME.colors.cardBorderSubtle,
     padding: 16,
+  },
+  spotlightCard: {
+    borderWidth: 2,
+    borderColor: '#7aa2f7',
+    backgroundColor: 'rgba(122, 162, 247, 0.08)',
+    shadowColor: '#7aa2f7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.7,
+    shadowRadius: 16,
+    elevation: 12,
   },
   cardHeaderLabel: {
     fontSize: 10,

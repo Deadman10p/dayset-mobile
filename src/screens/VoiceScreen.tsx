@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useData } from '../context/DataContext';
 import { THEME } from '../constants/theme';
 import { CustomIcon } from '../components/CustomIcon';
+import { TourSpotlightBadge } from '../components/TourSpotlightBadge';
 import { parseNaturalLanguage, formatMinutes } from '../utils/parser';
 
 interface ChatMessage {
@@ -22,7 +23,11 @@ interface ChatMessage {
   timestamp: string;
 }
 
-export const VoiceScreen: React.FC = () => {
+interface VoiceScreenProps {
+  activeHighlightStep?: string | null;
+}
+
+export const VoiceScreen: React.FC<VoiceScreenProps> = ({ activeHighlightStep }) => {
   const {
     todos,
     activities,
@@ -199,8 +204,17 @@ export const VoiceScreen: React.FC = () => {
       </View>
 
       <ScrollView style={styles.chatArea} contentContainerStyle={styles.chatContent}>
+        {activeHighlightStep === 'voice' && (
+          <TourSpotlightBadge
+            stepNumber={8}
+            label="Holographic Voice Orb"
+            color="#34d399"
+            direction="down"
+          />
+        )}
+
         {/* Holographic Voice Orb Centerpiece */}
-        <View style={styles.orbContainer}>
+        <View style={[styles.orbContainer, activeHighlightStep === 'voice' && styles.spotlightOrbContainer]}>
           <TouchableOpacity onPress={handleOrbPress} activeOpacity={0.85}>
             {/* Outer Aura Ring */}
             <Animated.View
@@ -392,6 +406,19 @@ const styles = StyleSheet.create({
   orbContainer: {
     alignItems: 'center',
     paddingVertical: 20,
+  },
+  spotlightOrbContainer: {
+    borderRadius: 24,
+    backgroundColor: 'rgba(52, 211, 153, 0.08)',
+    borderWidth: 2,
+    borderColor: '#34d399',
+    shadowColor: '#34d399',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.7,
+    shadowRadius: 18,
+    elevation: 12,
+    paddingVertical: 14,
+    marginBottom: 10,
   },
   orbAura: {
     width: 110,

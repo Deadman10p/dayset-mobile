@@ -13,9 +13,14 @@ import { THEME, PRIORITIES } from '../constants/theme';
 import { TaskCard } from '../components/TaskCard';
 import { CustomIcon } from '../components/CustomIcon';
 import { NewTaskModal } from '../components/NewTaskModal';
+import { TourSpotlightBadge } from '../components/TourSpotlightBadge';
 import { Priority, Todo } from '../types';
 
-export const TodosScreen: React.FC = () => {
+interface TodosScreenProps {
+  activeHighlightStep?: string | null;
+}
+
+export const TodosScreen: React.FC<TodosScreenProps> = ({ activeHighlightStep }) => {
   const { todos, completeTodo, reopenTodo, snoozeTodo, deleteTodo, showToast } = useData();
   const [filterTab, setFilterTab] = useState<'all' | 'today' | 'inbox' | 'done'>('all');
   const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
@@ -71,8 +76,17 @@ export const TodosScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      {activeHighlightStep === 'board' && (
+        <TourSpotlightBadge
+          stepNumber={6}
+          label="Kanban & Task Board"
+          color="#ff9f5a"
+          direction="down"
+        />
+      )}
+
       {/* Top Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, activeHighlightStep === 'board' && styles.highlightedHeader]}>
         <View>
           <Text style={styles.headerSub}>YOUR PLATE</Text>
           <Text style={styles.headerTitle}>Task Ledger</Text>
@@ -268,6 +282,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingTop: 12,
     paddingBottom: 12,
+  },
+  highlightedHeader: {
+    backgroundColor: 'rgba(255, 159, 90, 0.08)',
+    borderWidth: 1.5,
+    borderColor: '#ff9f5a',
+    borderRadius: 16,
+    marginHorizontal: 10,
+    paddingHorizontal: 12,
   },
   headerSub: {
     fontSize: 10,

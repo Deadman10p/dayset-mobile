@@ -34,13 +34,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       userName: 'The Deadman',
       isDemoUser: false,
     });
-    showToast('Welcome back, The Deadman', 'Signing into DayTracker...', 'success');
+    showToast('Welcome back, The Deadman', 'Signing into DaySet...', 'success');
     onEnterApp();
   };
 
   const handleDemoSignIn = async () => {
     await updateSettings({
-      email: 'demo@daytracker.app',
+      email: 'demo@dayset.app',
       userName: 'Demo Pilot',
       isDemoUser: true,
     });
@@ -62,9 +62,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         <View style={styles.badgesRow}>
           <View style={styles.brandBadge}>
             <View style={styles.brandBadgeIcon}>
-              <Text style={styles.brandBadgeIconText}>L</Text>
+              <Text style={styles.brandBadgeIconText}>D</Text>
             </View>
-            <Text style={styles.brandBadgeText}>DAYTRACKER</Text>
+            <Text style={styles.brandBadgeText}>DAYSET</Text>
           </View>
 
           <TouchableOpacity style={styles.docsBadge} onPress={onOpenTour}>
@@ -179,7 +179,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           >
             <CustomIcon name="sparkles" size={14} color="#fbbf24" />
             <Text style={styles.demoText}>
-              Try the demo account (demo@daytracker.app)
+              Try the demo account (demo@dayset.app)
             </Text>
           </TouchableOpacity>
 
@@ -193,7 +193,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
         {/* Bottom Link */}
         <TouchableOpacity style={styles.bottomLink} onPress={handleSignIn}>
-          <Text style={styles.bottomLinkText}>ENTER DAYTRACKER</Text>
+          <Text style={styles.bottomLinkText}>ENTER DAYSET</Text>
           <CustomIcon name="chevron-down" size={14} color="#8a94a6" />
         </TouchableOpacity>
       </ScrollView>

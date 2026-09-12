@@ -48,7 +48,10 @@ function MainAppContent() {
   const [activeTab, setActiveTab] = useState<TabKey>('today');
   const [welcomeVisible, setWelcomeVisible] = useState(false);
   const [tourVisible, setTourVisible] = useState(false);
+  const [tourStepIndex, setTourStepIndex] = useState(0);
   const [autofillValue, setAutofillValue] = useState('');
+
+  const activeHighlightStep = tourVisible ? TOUR_STEPS[tourStepIndex]?.id : null;
 
   // Fake navigation object passed to child screens
   const navigation = {
@@ -62,37 +65,45 @@ function MainAppContent() {
     },
   };
 
+  const startTour = () => {
+    setTourStepIndex(0);
+    setActiveTab('today');
+    setTourVisible(true);
+  };
+
   const renderScreen = () => {
     switch (activeTab) {
       case 'today':
         return (
           <TodayScreen
             navigation={navigation}
-            onOpenTour={() => setTourVisible(true)}
+            onOpenTour={startTour}
             autofillValue={autofillValue}
+            activeHighlightStep={activeHighlightStep}
           />
         );
       case 'todos':
-        return <TodosScreen />;
+        return <TodosScreen activeHighlightStep={activeHighlightStep} />;
       case 'voice':
-        return <VoiceScreen />;
+        return <VoiceScreen activeHighlightStep={activeHighlightStep} />;
       case 'journal':
-        return <JournalScreen />;
+        return <JournalScreen activeHighlightStep={activeHighlightStep} />;
       case 'agents':
-        return <IntegrationsScreen />;
+        return <IntegrationsScreen activeHighlightStep={activeHighlightStep} />;
       case 'settings':
         return (
           <SettingsScreen
             onOpenWelcome={() => setWelcomeVisible(true)}
-            onOpenTour={() => setTourVisible(true)}
+            onOpenTour={startTour}
           />
         );
       default:
         return (
           <TodayScreen
             navigation={navigation}
-            onOpenTour={() => setTourVisible(true)}
+            onOpenTour={startTour}
             autofillValue={autofillValue}
+            activeHighlightStep={activeHighlightStep}
           />
         );
     }
@@ -180,15 +191,17 @@ function MainAppContent() {
           onEnterApp={() => setWelcomeVisible(false)}
           onOpenTour={() => {
             setWelcomeVisible(false);
-            setTourVisible(true);
+            startTour();
           }}
         />
       </Modal>
 
-      {/* Interactive Step-by-Step Guided Walkthrough Tour */}
+      {/* Interactive Step-by-Step Guided Walkthrough Tour with Real Spotlight Highlighting */}
       <InteractiveTour
         visible={tourVisible}
+        stepIndex={tourStepIndex}
         onClose={() => setTourVisible(false)}
+        onStepChange={idx => setTourStepIndex(idx)}
         onSwitchTab={tab => setActiveTab(tab)}
         onTriggerAutofill={cmd => setAutofillValue(cmd)}
       />

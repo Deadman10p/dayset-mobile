@@ -11,9 +11,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useData } from '../context/DataContext';
 import { THEME, ENERGY_LEVELS, CATEGORIES, getCategory } from '../constants/theme';
 import { CustomIcon } from '../components/CustomIcon';
+import { TourSpotlightBadge } from '../components/TourSpotlightBadge';
 import { formatMinutes } from '../utils/parser';
 
-export const JournalScreen: React.FC = () => {
+interface JournalScreenProps {
+  activeHighlightStep?: string | null;
+}
+
+export const JournalScreen: React.FC<JournalScreenProps> = ({ activeHighlightStep }) => {
   const { activities, journal, saveJournalEntry, addActivity, deleteActivity, showToast } = useData();
 
   // Selected date (defaults to today in YYYY-MM-DD)
@@ -172,33 +177,43 @@ export const JournalScreen: React.FC = () => {
         )}
 
         {/* Daily Energy & Mood Check-In */}
-        <View style={styles.card}>
-          <Text style={styles.cardHeaderLabel}>HOW IS YOUR ENERGY TODAY?</Text>
-          <View style={styles.energyRow}>
-            {ENERGY_LEVELS.map(lvl => {
-              const isSelected = currentEntry.energy === lvl.value;
-              return (
-                <TouchableOpacity
-                  key={lvl.value}
-                  style={[
-                    styles.energyBtn,
-                    isSelected && styles.energyBtnSelected,
-                  ]}
-                  onPress={() => handleSelectEnergy(lvl.value)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.energyEmoji}>{lvl.emoji}</Text>
-                  <Text
+        <View style={activeHighlightStep === 'journal' && styles.spotlightWrapper}>
+          {activeHighlightStep === 'journal' && (
+            <TourSpotlightBadge
+              stepNumber={7}
+              label="Time River & Mood"
+              color="#bb9af7"
+              direction="down"
+            />
+          )}
+          <View style={[styles.card, activeHighlightStep === 'journal' && styles.highlightedCard]}>
+            <Text style={styles.cardHeaderLabel}>HOW IS YOUR ENERGY TODAY?</Text>
+            <View style={styles.energyRow}>
+              {ENERGY_LEVELS.map(lvl => {
+                const isSelected = currentEntry.energy === lvl.value;
+                return (
+                  <TouchableOpacity
+                    key={lvl.value}
                     style={[
-                      styles.energyLabel,
-                      isSelected && styles.energyLabelSelected,
+                      styles.energyBtn,
+                      isSelected && styles.energyBtnSelected,
                     ]}
+                    onPress={() => handleSelectEnergy(lvl.value)}
+                    activeOpacity={0.7}
                   >
-                    {lvl.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+                    <Text style={styles.energyEmoji}>{lvl.emoji}</Text>
+                    <Text
+                      style={[
+                        styles.energyLabel,
+                        isSelected && styles.energyLabelSelected,
+                      ]}
+                    >
+                      {lvl.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
         </View>
 
@@ -405,6 +420,22 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 110,
+  },
+  spotlightWrapper: {
+    marginHorizontal: 8,
+    marginBottom: 8,
+  },
+  highlightedCard: {
+    marginHorizontal: 0,
+    marginBottom: 0,
+    borderWidth: 2,
+    borderColor: '#bb9af7',
+    backgroundColor: 'rgba(187, 154, 247, 0.08)',
+    shadowColor: '#bb9af7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.7,
+    shadowRadius: 16,
+    elevation: 12,
   },
   card: {
     marginHorizontal: 16,

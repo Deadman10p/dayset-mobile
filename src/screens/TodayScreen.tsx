@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -19,22 +19,39 @@ import { RemindersWidget } from '../components/RemindersWidget';
 import { DayLogWidget } from '../components/DayLogWidget';
 import { CustomIcon } from '../components/CustomIcon';
 import { NewTaskModal } from '../components/NewTaskModal';
-import { TourModal } from '../components/TourModal';
+import { TourSpotlightBadge } from '../components/TourSpotlightBadge';
 
 interface TodayScreenProps {
   navigation: any;
   onOpenTour?: () => void;
   autofillValue?: string;
+  activeHighlightStep?: string | null;
 }
 
 export const TodayScreen: React.FC<TodayScreenProps> = ({
   navigation,
   onOpenTour,
   autofillValue,
+  activeHighlightStep,
 }) => {
   const { todos, completeTodo, snoozeTodo, deleteTodo, showToast } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const [newTaskVisible, setNewTaskVisible] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    if (activeHighlightStep === 'plate') {
+      scrollViewRef.current?.scrollTo({ y: 350, animated: true });
+    } else if (activeHighlightStep === 'focus') {
+      scrollViewRef.current?.scrollTo({ y: 620, animated: true });
+    } else if (
+      activeHighlightStep === 'clock' ||
+      activeHighlightStep === 'omnibar' ||
+      activeHighlightStep === 'arc'
+    ) {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    }
+  }, [activeHighlightStep]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -59,9 +76,9 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({
       <View style={styles.topNav}>
         <View style={styles.brandRow}>
           <View style={styles.brandLogo}>
-            <Text style={styles.brandLogoText}>L</Text>
+            <Text style={styles.brandLogoText}>D</Text>
           </View>
-          <Text style={styles.brandTitle}>DAYTRACKER</Text>
+          <Text style={styles.brandTitle}>DAYSET</Text>
         </View>
 
         <View style={styles.topActions}>
@@ -77,6 +94,7 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({
       </View>
 
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -89,81 +107,131 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({
         }
       >
         {/* Header with Date, Greeting, and Digital Clock */}
-        <HeaderClock onPressProfile={() => navigation.navigate('Settings')} />
+        <View style={activeHighlightStep === 'clock' && styles.spotlightSection}>
+          {activeHighlightStep === 'clock' && (
+            <TourSpotlightBadge
+              stepNumber={1}
+              label="Living Chronometer"
+              color="#34d399"
+              direction="down"
+            />
+          )}
+          <HeaderClock onPressProfile={() => navigation.navigate('Settings')} />
+        </View>
 
         {/* Omnibar Quick Capture Input */}
-        <Omnibar externalValue={autofillValue} />
+        <View style={activeHighlightStep === 'omnibar' && styles.spotlightSectionOmnibar}>
+          {activeHighlightStep === 'omnibar' && (
+            <TourSpotlightBadge
+              stepNumber={2}
+              label="Omnibar Quick Capture"
+              color="#f2c85b"
+              direction="down"
+            />
+          )}
+          <Omnibar externalValue={autofillValue} />
+        </View>
 
         {/* Hero: 24-Hour Day Arc */}
-        <DayArc onQuickLogPress={() => navigation.navigate('Journal')} />
+        <View style={activeHighlightStep === 'arc' && styles.spotlightSection}>
+          {activeHighlightStep === 'arc' && (
+            <TourSpotlightBadge
+              stepNumber={3}
+              label="24-Hour Day Arc"
+              color="#34d399"
+              direction="down"
+            />
+          )}
+          <DayArc onQuickLogPress={() => navigation.navigate('Journal')} />
+        </View>
 
         {/* On Your Plate Section */}
-        <View style={styles.plateCard}>
-          <View style={styles.plateHeaderRow}>
-            <View>
-              <Text style={styles.plateSubtitle}>ON YOUR PLATE</Text>
-              <Text style={styles.plateTitle}>Due today & overdue</Text>
-            </View>
-
-            <View style={styles.plateActionsRow}>
-              <TouchableOpacity
-                style={styles.newBtn}
-                onPress={() => setNewTaskVisible(true)}
-                activeOpacity={0.7}
-              >
-                <CustomIcon name="plus" size={12} color="#f3eee4" />
-                <Text style={styles.newBtnText}>New</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Tasks List or Empty State */}
-          {dueTodayAndOverdue.length === 0 ? (
-            <View style={styles.emptyPlateBox}>
-              <View style={styles.emptyCheckCircle}>
-                <CustomIcon name="check" size={24} color="#34d399" strokeWidth={3} />
-              </View>
-              <Text style={styles.emptyPlateTitle}>Nothing due today</Text>
-              <Text style={styles.emptyPlateSub}>
-                Type above to add something, or ask Ledger by voice.
-              </Text>
-              <TouchableOpacity
-                style={styles.openBoardBtn}
-                onPress={() => navigation.navigate('Todos')}
-              >
-                <Text style={styles.openBoardText}>Open the board →</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.tasksList}>
-              <Text style={styles.swipeHintText}>
-                tap check to complete · snooze to delay
-              </Text>
-              {dueTodayAndOverdue.map(todo => (
-                <TaskCard
-                  key={todo.id}
-                  todo={todo}
-                  onComplete={async () => {
-                    await completeTodo(todo.id);
-                    showToast('Completed!', todo.title, 'success');
-                  }}
-                  onSnooze={async () => {
-                    await snoozeTodo(todo.id, 24);
-                    showToast('Snoozed', 'Moved to tomorrow', 'info');
-                  }}
-                  onDelete={async () => {
-                    await deleteTodo(todo.id);
-                    showToast('Deleted', todo.title, 'info');
-                  }}
-                  onPress={() => navigation.navigate('Todos')}
-                />
-              ))}
-            </View>
+        <View style={activeHighlightStep === 'plate' && styles.spotlightSectionPlate}>
+          {activeHighlightStep === 'plate' && (
+            <TourSpotlightBadge
+              stepNumber={4}
+              label="On Your Plate Tasks"
+              color="#f43f5e"
+              direction="down"
+            />
           )}
+          <View style={[styles.plateCard, activeHighlightStep === 'plate' && styles.highlightedPlateCard]}>
+            <View style={styles.plateHeaderRow}>
+              <View>
+                <Text style={styles.plateSubtitle}>ON YOUR PLATE</Text>
+                <Text style={styles.plateTitle}>Due today & overdue</Text>
+              </View>
+
+              <View style={styles.plateActionsRow}>
+                <TouchableOpacity
+                  style={styles.newBtn}
+                  onPress={() => setNewTaskVisible(true)}
+                  activeOpacity={0.7}
+                >
+                  <CustomIcon name="plus" size={12} color="#f3eee4" />
+                  <Text style={styles.newBtnText}>New</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Tasks List or Empty State */}
+            {dueTodayAndOverdue.length === 0 ? (
+              <View style={styles.emptyPlateBox}>
+                <View style={styles.emptyCheckCircle}>
+                  <CustomIcon name="check" size={24} color="#34d399" strokeWidth={3} />
+                </View>
+                <Text style={styles.emptyPlateTitle}>Nothing due today</Text>
+                <Text style={styles.emptyPlateSub}>
+                  Type above to add something, or ask Ledger by voice.
+                </Text>
+                <TouchableOpacity
+                  style={styles.openBoardBtn}
+                  onPress={() => navigation.navigate('Todos')}
+                >
+                  <Text style={styles.openBoardText}>Open the board →</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.tasksList}>
+                <Text style={styles.swipeHintText}>
+                  tap check to complete · snooze to delay
+                </Text>
+                {dueTodayAndOverdue.map(todo => (
+                  <TaskCard
+                    key={todo.id}
+                    todo={todo}
+                    onComplete={async () => {
+                      await completeTodo(todo.id);
+                      showToast('Completed!', todo.title, 'success');
+                    }}
+                    onSnooze={async () => {
+                      await snoozeTodo(todo.id, 24);
+                      showToast('Snoozed', 'Moved to tomorrow', 'info');
+                    }}
+                    onDelete={async () => {
+                      await deleteTodo(todo.id);
+                      showToast('Deleted', todo.title, 'info');
+                    }}
+                    onPress={() => navigation.navigate('Todos')}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
         </View>
 
         {/* Focus Widget (Radial Timer & Categories) */}
-        <FocusWidget />
+        <View style={activeHighlightStep === 'focus' && styles.spotlightSectionFocus}>
+          {activeHighlightStep === 'focus' && (
+            <TourSpotlightBadge
+              stepNumber={5}
+              label="Focus Radial Timer"
+              color="#7aa2f7"
+              direction="down"
+            />
+          )}
+          <FocusWidget />
+        </View>
 
         {/* Upcoming Reminders Widget */}
         <RemindersWidget onViewAll={() => navigation.navigate('Todos')} />
@@ -223,6 +291,68 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  spotlightSection: {
+    borderRadius: 22,
+    backgroundColor: 'rgba(52, 211, 153, 0.05)',
+    borderWidth: 2,
+    borderColor: '#34d399',
+    paddingVertical: 6,
+    marginHorizontal: 4,
+    marginBottom: 8,
+    shadowColor: '#34d399',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.6,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  spotlightSectionOmnibar: {
+    borderRadius: 22,
+    backgroundColor: 'rgba(242, 200, 91, 0.05)',
+    borderWidth: 2,
+    borderColor: '#f2c85b',
+    paddingVertical: 6,
+    marginHorizontal: 4,
+    marginBottom: 8,
+    shadowColor: '#f2c85b',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.6,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  spotlightSectionPlate: {
+    borderRadius: 22,
+    backgroundColor: 'rgba(244, 63, 94, 0.05)',
+    borderWidth: 2,
+    borderColor: '#f43f5e',
+    paddingVertical: 6,
+    marginHorizontal: 4,
+    marginBottom: 8,
+    shadowColor: '#f43f5e',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.6,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  spotlightSectionFocus: {
+    borderRadius: 22,
+    backgroundColor: 'rgba(122, 162, 247, 0.05)',
+    borderWidth: 2,
+    borderColor: '#7aa2f7',
+    paddingVertical: 6,
+    marginHorizontal: 4,
+    marginBottom: 8,
+    shadowColor: '#7aa2f7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.6,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  highlightedPlateCard: {
+    borderColor: 'transparent',
+    borderWidth: 0,
+    marginHorizontal: 0,
+    marginBottom: 0,
   },
   tourBtn: {
     flexDirection: 'row',

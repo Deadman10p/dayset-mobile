@@ -33,7 +33,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const handleSaveProfile = async () => {
     await updateSettings({
       userName: userName.trim() || 'The Deadman',
-      email: email.trim() || 'user@daytracker.app',
+      email: email.trim() || 'deadman@dayset.io',
       openaiKey: openaiKey.trim(),
       anthropicKey: anthropicKey.trim(),
       elevenlabsKey: elevenlabsKey.trim(),
@@ -194,7 +194,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
         <View style={styles.footerNote}>
           <Text style={styles.footerText}>
-            DaySet · DayTracker mobile edition
+            DaySet Mobile Edition
           </Text>
           <Text style={styles.footerSubText}>
             Autonomous AI Ledger with MCP Agent Gateway

@@ -78,7 +78,7 @@ export const getCategory = (catId?: string): CategoryInfo => {
   return CATEGORIES.find(c => c.id === catId) || CATEGORIES[0];
 };
 
-// Generate realistic seed data for DayTracker
+// Generate realistic seed data for DaySet
 export const INITIAL_TODOS: Todo[] = [
   {
     id: 'todo-1',
